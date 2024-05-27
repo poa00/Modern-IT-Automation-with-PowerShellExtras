@@ -1,23 +1,20 @@
-$swApiUrl = 'https://mc-starwars-data.azurewebsites.net'
-function Invoke-StarWarsApi
-{
+$swApiUrl = 'https://swapi.info'
+function Invoke-StarWarsApi {
     param (
         [Parameter(Mandatory)]
         [ValidateSet('Planets', 'Films', 'People')]
-        [string] $ObjectType,
+        [string]$objectType,
 
-        [int] $id = -1
+        [int]$id = -1
     )
     try {
-        $suffix = $id -ne -1 ? "?id=$id" : ""
+        $suffix = $id -ne -1 ? "/$id" : ''
         $path = "$($objectType.ToLower())$suffix"
 
         $output = Invoke-RestMethod -Uri "$swApiUrl/api/$path" -Method GET
         Write-Output $output
-    }
-    catch {
+    } catch {
         $msg = "Error calling $swApiUrl/api/$path. $($_.Exception.Message)"
         Write-Host $msg -f Red
-        Write-Output $null
     }
 }

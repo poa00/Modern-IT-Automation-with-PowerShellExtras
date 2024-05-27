@@ -1,6 +1,6 @@
 # Arrange
 BeforeAll {
-    . $PSCommandPath.Replace('.Mocked.Tests.ps1','.ps1')
+    . $PSCommandPath.Replace('.Mocked.Tests.ps1', '.ps1')
 
     Mock Invoke-StarWarsApi {
         $output1 = [PSCustomObject]@{
@@ -25,4 +25,4 @@ BeforeAll {
             weight = '84'
         }
         Write-Output @($output1, $output2, $output3)
-    } -Verifiable -ParameterFilter { $objectType -eq 'People'}
+    } -Verifiable -ParameterFilter { $objectType -eq 'People' }

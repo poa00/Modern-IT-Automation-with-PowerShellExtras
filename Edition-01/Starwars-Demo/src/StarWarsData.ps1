@@ -1,22 +1,22 @@
-# Wrapper for the Star Wars API website https://swapi-deno.azurewebsites.net
+# Wrapper for the Star Wars API website https://swapi.info
 #
 # other samples that are out there, in case the above site goes offline
-# - www.swapi.tech
-# - swapi.dev
+# - https://swapi.dev
+# - https://www.swapi.tech
 
 #Requires -Version 7.0
 
-$swApiUrl = 'https://mc-starwars-data.azurewebsites.net'
+$swApiUrl = 'https://swapi.info'
 function Invoke-StarWarsApi {
     param (
         [Parameter(Mandatory)]
         [ValidateSet('Planets', 'Films', 'People')]
-        [string] $objectType,
+        [string]$objectType,
 
-        [int] $id = -1
+        [int]$id = -1
     )
     try {
-        $suffix = $id -ne -1 ? "?id=$id" : ''
+        $suffix = $id -ne -1 ? "/$id" : ''
         $path = "$($objectType.ToLower())$suffix"
 
         $output = Invoke-RestMethod -Uri "$swApiUrl/api/$path" -Method GET
@@ -24,15 +24,23 @@ function Invoke-StarWarsApi {
     } catch {
         $msg = "Error calling $swApiUrl/api/$path. $($_.Exception.Message)"
         Write-Host $msg -f Red
-        Write-Output $null
     }
+}
+
+# Gets the ID from a Star Wars person, planet, or film URL
+function Get-SWIdFromUrl {
+    param (
+        [Parameter(ValueFromPipeline)]
+        [string]$Url
+    )
+    $Url -replace 'http.+/(\d+).*?', '$1'
 }
 
 # Searches for a Star Wars person given a part of a name
 function Search-SWPerson {
     param (
         [Parameter(Mandatory)]
-        [string] $Name
+        [string]$Name
     )
     # load all the people
     $response = Invoke-StarWarsApi -objectType People
@@ -43,9 +51,9 @@ function Search-SWPerson {
         Write-Output @{ Error = "No person results found for '$Name'." }
     } else {
         # return all matches with some properties
-        $personDetails = $results | ForEach-Object { Invoke-StarWarsApi -objectType People -id $_.id }
-        Write-Output $personDetails | Select-Object @{ Name = 'id'; Expression = { $_.id } },
-        name, gender, height,
+        Write-Output $results | Select-Object @{
+            Name = 'id'; Expression = { $_.url | Get-SWIdFromUrl }
+        }, name, gender, height,
         @{ Name = 'weight'; Expression = { $_.mass } }
     }
 }
@@ -54,7 +62,7 @@ function Search-SWPerson {
 function Search-SWPlanet {
     param (
         [Parameter(Mandatory)]
-        [string] $Name
+        [string]$Name
     )
     # load all the planets
     $response = Invoke-StarWarsApi -objectType Planets
@@ -64,10 +72,10 @@ function Search-SWPlanet {
     if ($null -eq $results) {
         Write-Output @{ Error = "No planet results found for '$Name'." }
     } else {
-        $planetDetails = $results | ForEach-Object { Invoke-StarWarsApi -objectType Planets -id $_.id }
         # return all matches with some attributes
-        Write-Output $planetDetails | Select-Object @{ Name = 'id'; Expression = { $_.id } },
-        name, population, diameter, terrain
+        Write-Output $results | Select-Object @{
+            Name = 'id'; Expression = { $_.url | Get-SWIdFromUrl }
+        }, name, population, diameter, terrain
     }
 }
 
@@ -75,7 +83,7 @@ function Search-SWPlanet {
 function Search-SWFilm {
     param (
         [Parameter(Mandatory)]
-        [string] $Name
+        [string]$Name
     )
     # load all the films (currently does not include the new trilogy)
     $response = Invoke-StarWarsApi -objectType Films
@@ -86,37 +94,40 @@ function Search-SWFilm {
         Write-Output @{ Error = "No film results found for '$Name'." }
     } else {
         # return all matches with some attributes
-        $filmDetails = $results | ForEach-Object { Invoke-StarWarsApi -objectType Films -id $_.id }
-        Write-Output $filmDetails | Select-Object @{ Name = 'id'; Expression = { $_.id } },
-        title, director, release_date,
-        characters, planets
+        Write-Output $results | Select-Object @{
+            Name = 'id'; Expression = { $_.url | Get-SWIdFromUrl }
+        }, title, director, release_date, characters, planets
     }
 }
 
 function Get-SWPerson {
     param (
         [Parameter(Mandatory)]
-        [int] $Id
+        [int]$Id
     )
     # get the person
     $person = Invoke-StarWarsApi -objectType People -id $Id
 
     if ($null -eq $person) {
-        Write-Output @{ Error = "Unable to find a person record given Id: $Id" }
+        Write-Output @{
+            Error = "Unable to find a person record given Id: $id"
+        }
     } else {
         # get the homeworld planet and the films
-        $planet = Invoke-StarWarsApi -objectType Planets -id $person.homeworld
+        $HomeWorldId = $person.homeworld | Get-SWIdFromUrl
+        $planet = Invoke-StarWarsApi -objectType Planets -id $HomeWorldId
         $films = Invoke-StarWarsApi -objectType Films
-
-        # get detailed info of all films
-        $filmDetails = $films | ForEach-Object { Invoke-StarWarsApi -objectType Films -id $_.id }
 
         # build the result object as a mix of all the data returned
         $result = [PSCustomObject]@{
             Name      = $person.Name
-            BodyType  = $person | Select-Object height, mass, gender, skin_color, eye_color
-            HomeWorld = $planet | Select-Object name, population, gravity, terrain
-            Films     = $filmDetails | Where-Object people -Contains $person.id | Select-Object title, director, release_date
+            BodyType  = $person |
+                Select-Object height, mass, gender, skin_color, eye_color
+            HomeWorld = $planet |
+                Select-Object name, population, gravity, terrain
+            Films     = $films |
+                Where-Object characters -Contains $person.url |
+                Select-Object title, director, release_date
         }
         Write-Output $result
     }
