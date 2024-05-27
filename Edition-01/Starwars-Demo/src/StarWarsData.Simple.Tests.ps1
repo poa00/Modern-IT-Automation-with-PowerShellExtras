@@ -1,6 +1,6 @@
 # Arrange
 BeforeAll {
-    . $PSCommandPath.Replace('.Simple.Tests.ps1','.ps1')
+    . $PSCommandPath.Replace('.Simple.Tests.ps1', '.ps1')
 }
 
 Describe 'Search-SWPerson' -Tag 'Unit' {

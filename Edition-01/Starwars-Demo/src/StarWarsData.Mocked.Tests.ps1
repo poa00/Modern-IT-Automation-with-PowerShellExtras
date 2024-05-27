@@ -1,8 +1,8 @@
 # Arrange
 BeforeAll {
-    . $PSCommandPath.Replace('.Mocked.Tests.ps1','.ps1')
+    . $PSCommandPath.Replace('.Mocked.Tests.ps1', '.ps1')
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output1 = [PSCustomObject]@{
             id     = 4
             name   = 'Darth Vader'
@@ -25,9 +25,9 @@ BeforeAll {
             weight = '84'
         }
         Write-Output @($output1, $output2, $output3)
-    } -Verifiable -ParameterFilter { $objectType -eq 'People'} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'People' }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             height     = '172'
             mass       = '77'
@@ -41,9 +41,9 @@ BeforeAll {
             id         = 1
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 1} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 1 }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             height     = '202'
             mass       = '136'
@@ -57,9 +57,9 @@ BeforeAll {
             id         = 4
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 4} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 4 }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             height     = '188'
             mass       = '84'
@@ -73,9 +73,9 @@ BeforeAll {
             id         = 9
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 9} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'People' -and $id -eq 9 }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output1 = [PSCustomObject]@{
             id         = 8
             name       = 'Naboo'
@@ -98,9 +98,9 @@ BeforeAll {
             terrain    = @('oceans', 'savannas', 'mountains', 'grasslands')
         }
         Write-Output @($output1, $output2, $output3)
-    } -Verifiable -ParameterFilter { $objectType -eq 'Planets'} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             diameter        = '12120'
             rotation_period = '26'
@@ -113,9 +113,9 @@ BeforeAll {
             id              = 8
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 8} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 8 }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             diameter        = '10465'
             rotation_period = '23'
@@ -128,9 +128,9 @@ BeforeAll {
             id              = 1
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 1} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 1 }
 
-    Mock Invoke-StarWarsApi {  
+    Mock Invoke-StarWarsApi {
         $output = [PSCustomObject]@{
             diameter        = '9830'
             rotation_period = '25'
@@ -143,14 +143,14 @@ BeforeAll {
             id              = 25
         }
         Write-Output @($output)
-    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 25} 
+    } -Verifiable -ParameterFilter { $objectType -eq 'Planets' -and $id -eq 25 }
 }
 
 Describe 'Search-SWPerson' -Tag 'Unit', 'Mocked' {
     It 'Returns a single match' {
         # Arrange
         $testName = 'Vader'
-        
+
         # Act
         $result = Search-SWPerson -Name $testName
 
@@ -168,7 +168,7 @@ Describe 'Search-SWPerson' -Tag 'Unit', 'Mocked' {
         # Assert
         $result.Error | Should -Be "No person results found for '$testName'."
     }
-    It "Returns multiple matches" {
+    It 'Returns multiple matches' {
         # Arrange
         $testName = 'walker'
 
@@ -177,7 +177,7 @@ Describe 'Search-SWPerson' -Tag 'Unit', 'Mocked' {
 
         # Assert
         $result.Count | Should -BeGreaterThan 1
-        $result.Name -like "*$testName*"| Should -HaveCount $result.Count
+        $result.Name -like "*$testName*" | Should -HaveCount $result.Count
     }
 }
 
@@ -185,7 +185,7 @@ Describe 'Search-SWPlanet' -Tag 'Unit', 'Mocked' {
     It 'Returns a single match' {
         # Arrange
         $testName = 'nabo'
-        
+
         # Act
         $result = Search-SWPlanet -Name $testName
 
@@ -196,7 +196,7 @@ Describe 'Search-SWPlanet' -Tag 'Unit', 'Mocked' {
     It 'Returns no matches' {
         # Arrange
         $testName = 'Invalid'
-        
+
         # Act
         $result = Search-SWPlanet -Name $testName
 
