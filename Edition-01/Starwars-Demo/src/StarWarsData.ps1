@@ -6,7 +6,7 @@
 
 #Requires -Version 7.0
 
-$swApiUrl = 'https://mc-starwars-data.azurewebsites.net'
+$swApiUrl = 'https://thefreeman193.github.io/mita-swapi'
 function Invoke-StarWarsApi
 {
     param (
@@ -17,7 +17,7 @@ function Invoke-StarWarsApi
         [int] $id = -1 
     )
     try {
-        $suffix = $id -ne -1 ? "?id=$id" : ""
+        $suffix = $id -ne -1 ? "/$id" : ""
         $path = "$($objectType.ToLower())$suffix"
 
         $output = Invoke-RestMethod -Uri "$swApiUrl/api/$path" -Method GET
